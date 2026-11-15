@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase"; 
+import { getSupabase } from "@/lib/supabase"; 
 import { NextResponse } from "next/server";
 
 export const maxDuration = 60;

@@ -1,5 +1,5 @@
 'use client';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 import {PlannerGuide} from './watermelon/PlannerGuide';
 import ContinuousTabs from './watermelon/ContinuousTabs';
 import {ExpandDetails} from './watermelon/FieldNotes';
