@@ -178,21 +178,36 @@ export default function GuardianSOS({
         </button>
 
         <label 
-          htmlFor="fall-toggle" 
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: '#1a1a1a', padding: '16px', borderRadius: '16px', cursor: 'pointer', border: '1px solid #333' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '18px' }}>🛡️</span>
-            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Fall Detection</span>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <input type="checkbox" id="fall-detection" checked={fallDetectionEnabled} onChange={(e) => setFallDetectionEnabled(e.target.checked)} style={{ display: 'none' }} />
-            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: fallDetectionEnabled ? '2px solid #ff4d4f' : '2px solid #555', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {fallDetectionEnabled && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-            </div>
-          </div>
-        </label>
+  htmlFor="fall-toggle" 
+  style={{ 
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+    width: '100%', background: '#1a1a1a', padding: '16px', borderRadius: '16px', 
+    cursor: 'pointer', border: '1px solid #333', position: 'relative' // Added relative
+  }}
+>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <span style={{ fontSize: '18px' }}>🛡️</span>
+    <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Fall Detection</span>
+  </div>
+  
+  <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 2 }}>
+    {/* Make the input fill the whole label to catch taps */}
+    <input 
+      type="checkbox" 
+      id="fall-toggle" 
+      name="fall-toggle"
+      checked={fallDetectionEnabled} 
+      onChange={(e) => setFallDetectionEnabled(e.target.checked)} 
+      style={{ 
+        position: 'absolute', opacity: 0, width: '100%', height: '100%', 
+        top: 0, left: 0, margin: 0, cursor: 'pointer', zIndex: 10 
+      }} 
+    />
+    <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: fallDetectionEnabled ? '2px solid #ff4d4f' : '2px solid #555', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+      {fallDetectionEnabled && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+    </div>
+  </div>
+</label>
 
       </div>
     </>
