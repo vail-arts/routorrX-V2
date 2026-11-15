@@ -28,7 +28,7 @@ export default function SafetyMap() {
 
     // 2. Fetch hazards from Supabase
     async function fetchHazards() {
-      const { data, error } = await supabase.from('road_hazards').select('*');
+      const { data, error } = await getSupabase().from('road_hazards').select('*');
       if (data) setHazards(data);
       if (error) console.error("Error fetching hazards:", error);
     }
