@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 export default function GuardianSOS({ 
   emergencyNumber, 
   contactNumber,
-  onEmergencyAlert // NEW: Triggers the SMS sending
+  onEmergencyAlert 
 }: { 
   emergencyNumber: string, 
   contactNumber: string,
@@ -21,10 +21,12 @@ export default function GuardianSOS({
   useEffect(() => {
     if (!fallDetectionEnabled) return;
     let isFreefall = false;
+    
     function handleMotion(event: DeviceMotionEvent) {
       const acc = event.accelerationIncludingGravity;
       if (!acc || acc.z === null) return;
       const z = Math.abs(acc.z);
+      
       if (z < 2.5 && !isFreefall) isFreefall = true;
       if (z > 25 && isFreefall) {
         isFreefall = false;
@@ -33,14 +35,14 @@ export default function GuardianSOS({
       }
       if (z >= 2.5 && z <= 25) isFreefall = false;
     }
+
     if (typeof window !== 'undefined' && window.DeviceMotionEvent) {
-      if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-        (DeviceMotionEvent as any).requestPermission().then((p: string) => { if (p === 'granted') window.addEventListener('devicemotion', handleMotion); }).catch(console.error);
-      } else {
-        window.addEventListener('devicemotion', handleMotion);
-      }
+      window.addEventListener('devicemotion', handleMotion);
     }
-    return () => { if (typeof window !== 'undefined') window.removeEventListener('devicemotion', handleMotion); };
+    
+    return () => { 
+      if (typeof window !== 'undefined') window.removeEventListener('devicemotion', handleMotion); 
+    };
   }, [fallDetectionEnabled]);
 
   // --- 2. COUNTDOWN TIMER ---
@@ -50,7 +52,6 @@ export default function GuardianSOS({
         timerRef.current = setTimeout(() => setCountdown(c => c - 1), 1000);
       } else {
         setSosState('active');
-        // Trigger the alert automatically
         const mapLink = location ? `https://www.google.com/maps?q=${location.lat},${location.lon}` : 'Location unavailable';
         onEmergencyAlert(`EMERGENCY: I need help. My location is: ${mapLink}`);
       }
@@ -88,6 +89,24 @@ export default function GuardianSOS({
 
   function resolveSOS() {
     setSosState('idle');
+  }
+
+  // --- THE NEW NATIVE BUTTON CLICK HANDLER ---
+  function handleFallToggle() {
+    const nextState = !fallDetectionEnabled;
+    setFallDetectionEnabled(nextState);
+
+    // If turning ON, request motion permission (Crucial for iOS)
+    if (nextState && typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      (DeviceMotionEvent as any).requestPermission()
+        .then((permissionState: string) => {
+          if (permissionState === 'denied') {
+            setFallDetectionEnabled(false);
+            alert("Motion permission denied. Fall detection cannot run.");
+          }
+        })
+        .catch(console.error);
+    }
   }
 
   return (
@@ -177,37 +196,28 @@ export default function GuardianSOS({
           SOS
         </button>
 
-        <label 
-  htmlFor="fall-toggle" 
-  style={{ 
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-    width: '100%', background: '#1a1a1a', padding: '16px', borderRadius: '16px', 
-    cursor: 'pointer', border: '1px solid #333', position: 'relative' // Added relative
-  }}
->
-  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-    <span style={{ fontSize: '18px' }}>🛡️</span>
-    <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Fall Detection</span>
-  </div>
-  
-  <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 2 }}>
-    {/* Make the input fill the whole label to catch taps */}
-    <input 
-      type="checkbox" 
-      id="fall-toggle" 
-      name="fall-toggle"
-      checked={fallDetectionEnabled} 
-      onChange={(e) => setFallDetectionEnabled(e.target.checked)} 
-      style={{ 
-        position: 'absolute', opacity: 0, width: '100%', height: '100%', 
-        top: 0, left: 0, margin: 0, cursor: 'pointer', zIndex: 10 
-      }} 
-    />
-    <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: fallDetectionEnabled ? '2px solid #ff4d4f' : '2px solid #555', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-      {fallDetectionEnabled && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-    </div>
-  </div>
-</label>
+        {/* NATIVE BUTTON FOR FALL DETECTION - FIXES IOS/ANDROID */}
+        <button 
+          onClick={handleFallToggle}
+          style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+            width: '100%', background: '#1a1a1a', padding: '16px', borderRadius: '16px', 
+            cursor: 'pointer', border: '1px solid #333'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '18px' }}>🛡️</span>
+            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold' }}>Fall Detection</span>
+          </div>
+          
+          <div style={{ 
+            width: '24px', height: '24px', borderRadius: '50%', 
+            border: fallDetectionEnabled ? '2px solid #ff4d4f' : '2px solid #555', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center' 
+          }}>
+            {fallDetectionEnabled && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="4"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+          </div>
+        </button>
 
       </div>
     </>
