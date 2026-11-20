@@ -4,6 +4,7 @@ const config: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
   typescript: { ignoreBuildErrors: true },
+  env: { HOSTNAME: '0.0.0.0' },
   async headers() {
     return [
       {
