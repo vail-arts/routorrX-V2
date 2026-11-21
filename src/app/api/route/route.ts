@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     const saferSteps = saferFeature.properties?.segments?.[0]?.steps?.map((s: any) => s.instruction) || ["Follow path"];
 
     // 4. Check hazards
-    const { data: hazards } = await supabase.from('road_hazards').select('*');
+    const supabase = getSupabase();
+const { data: hazards } = await supabase.from('road_hazards').select('*');
     const findHazards = (coords: number[][]) => {
       const found: any[] = [];
       if (!hazards) return found;
